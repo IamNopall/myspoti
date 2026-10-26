@@ -3,6 +3,7 @@ package com.music.spotui.ui.screens
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -543,8 +544,10 @@ fun PlayerScreen(navController: NavController) {
                     GlideImage(
                         transition = CrossFade,
                         modifier = (if (immersive) Modifier.fillMaxSize()
-                            // Normal layout keeps the inset, rounded cover.
-                            else Modifier.padding(horizontal = coverInset).aspectRatio(1f).clip(RoundedCornerShape(8.dp)))
+                            // Normal layout keeps the inset, rounded cover with subtle shadow
+                            else Modifier.padding(horizontal = coverInset).aspectRatio(1f)
+                                .shadow(elevation = 12.dp, shape = RoundedCornerShape(8.dp), spotColor = Color.Black.copy(alpha = 0.55f))
+                                .clip(RoundedCornerShape(8.dp)))
                             .graphicsLayer {
                                 alpha = coverAlpha
                                 val grow = 1f + (1f - coverAlpha) * 0.06f
@@ -566,21 +569,23 @@ fun PlayerScreen(navController: NavController) {
             }
             }
             }
-            // The slot (pill 32dp + 20dp gap) is reserved in every non-immersive layout, Canvas or
-            // not, and before the clip is even known: the title, seek bar and buttons then sit at
-            // the same height on every track, and a skip between the two kinds no longer moves
-            // them. Only the Canvas layout draws the pill here, fading in inside the slot.
+            // Spacing between artwork and title: only take pill slot height when video switch is needed,
+            // otherwise keep a tight 20dp margin matching Spotify's native layout.
             if (!immersive) {
-                val pillIn by androidx.compose.animation.core.animateFloatAsState(
-                    if (videoReady || videoOn) 1f else 0f, tween(250), label = "pillIn",
-                )
-                Box(modifier = Modifier.fillMaxWidth().height(52.dp), contentAlignment = Alignment.TopCenter) {
-                    if (pillAboveTitle && pillIn > 0f) com.music.spotui.ui.components.VideoSwitchPill(
-                        on = videoOn,
-                        modifier = Modifier
-                            .padding(bottom = 20.dp)
-                            .graphicsLayer { alpha = pillIn; val k = 0.85f + 0.15f * pillIn; scaleX = k; scaleY = k },
+                if (pillAboveTitle && (videoReady || videoOn)) {
+                    val pillIn by androidx.compose.animation.core.animateFloatAsState(
+                        if (videoReady || videoOn) 1f else 0f, tween(250), label = "pillIn",
                     )
+                    Box(modifier = Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.TopCenter) {
+                        com.music.spotui.ui.components.VideoSwitchPill(
+                            on = videoOn,
+                            modifier = Modifier
+                                .padding(bottom = 16.dp)
+                                .graphicsLayer { alpha = pillIn; val k = 0.85f + 0.15f * pillIn; scaleX = k; scaleY = k },
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
             }
 
@@ -627,12 +632,13 @@ fun PlayerScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp)
-                        .padding(top = 11.dp),
+                        .padding(top = 14.dp),
                 )
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 2.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     ElapsedLabel(songPlayingState, if (isDragging) (dragValue * duration).toLong() else null) {
@@ -641,8 +647,8 @@ fun PlayerScreen(navController: NavController) {
                     Text(
                         text = playerViewModel.formatDuration(duration.coerceAtLeast(0)),
                         color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 13.sp,
-                        lineHeight = 14.sp,
+                        fontSize = 11.sp,
+                        lineHeight = 13.sp,
                     )
                 }
 
@@ -870,10 +876,10 @@ fun PlayerTopBar(
     Row(verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 9.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
     ) {
         Icon(modifier = Modifier
-            .size(26.dp)
+            .size(24.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -897,18 +903,20 @@ fun PlayerTopBar(
                 ) { route?.let { navController.navigate(it) } },
         ) {
             Text(
-                text = line1,
-                color = Color.White,
-                fontSize = 12.sp,
-                lineHeight = 15.sp,
+                text = line1.uppercase(),
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 11.sp,
+                lineHeight = 14.sp,
+                letterSpacing = 0.5.sp,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             )
             if (line2.isNotBlank()) Text(
                 text = line2,
                 color = Color.White,
-                fontSize = 14.sp,
-                lineHeight = 18.sp,
+                fontSize = 13.5.sp,
+                lineHeight = 17.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
@@ -1027,15 +1035,15 @@ fun PlayerInfo(
                     ) { onTitleClick() } else Modifier),
                 text = if (adPlaying) stringResource(R.string.ad_playing) else songTitle,
                 color = Color.White,
-                fontSize = 22.sp,
-                lineHeight = 26.sp,
+                fontSize = 20.sp,
+                lineHeight = 24.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 softWrap = false,
             )
             // The artist row belongs to the song: during an ad the previous one's artist is
             // what the state still holds, so it is not shown as if it were playing.
-            if (!adPlaying) Row(verticalAlignment = Alignment.CenterVertically) {
+            if (!adPlaying) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 3.dp)) {
                 if (explicit) {
                     ExplicitBadge()
                     Spacer(modifier = Modifier.width(6.dp))
@@ -1043,7 +1051,7 @@ fun PlayerInfo(
                 Text(
                     text = songSinger,
                     color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     modifier = if (onArtistClick != null) Modifier.clickable(
@@ -1056,8 +1064,8 @@ fun PlayerInfo(
         // No like for a file of the device (not in the Spotify library; an extension's stream or a
         // download is), and none during an ad break: the + would save the song from before the break.
         if (!adPlaying && SongPlayer.canLike) {
-            if (likeSong != null) AddButton(song = likeSong, liked = liked, onLike = onLikeClick)
-            else LikeButton(liked = liked, onClick = onLikeClick)
+            if (likeSong != null) AddButton(song = likeSong, liked = liked, size = 26.dp, onLike = onLikeClick)
+            else LikeButton(liked = liked, size = 26.dp, onClick = onLikeClick)
         }
     }
 }
@@ -1134,9 +1142,9 @@ fun SpotifySeekBar(
     ) {
         val y = size.height / 2
         // Official: a hairline track and a small knob (the old one was thicker and bigger).
-        val track = 2.dp.toPx()
+        val track = 3.dp.toPx()
         val f = fraction().coerceIn(0f, 1f)
-        drawLine(Color.White.copy(alpha = 0.3f), androidx.compose.ui.geometry.Offset(0f, y), androidx.compose.ui.geometry.Offset(size.width, y), track, androidx.compose.ui.graphics.StrokeCap.Round)
+        drawLine(Color.White.copy(alpha = 0.2f), androidx.compose.ui.geometry.Offset(0f, y), androidx.compose.ui.geometry.Offset(size.width, y), track, androidx.compose.ui.graphics.StrokeCap.Round)
         drawLine(Color.White, androidx.compose.ui.geometry.Offset(0f, y), androidx.compose.ui.geometry.Offset(size.width * f, y), track, androidx.compose.ui.graphics.StrokeCap.Round)
         drawCircle(Color.White, radius = 5.dp.toPx(), center = androidx.compose.ui.geometry.Offset(size.width * f, y))
     }
@@ -1185,18 +1193,17 @@ fun PlayerFull(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
-            // Official spacing: the icons' centres sit 36dp from the edges, the row 57dp under
-            // the time labels and 74dp above the device row.
-            .padding(start = 22.dp, end = 22.dp, top = 18.dp, bottom = 26.dp)
+            // Official Spotify spacing: centered 24dp margins, perfectly proportioned controls
+            .padding(start = 24.dp, end = 24.dp, top = 14.dp, bottom = 22.dp)
             .height(64.dp)
     ) {
         Icon(
             modifier = Modifier
-                .size(28.dp)
+                .size(24.dp)
                 .drawWithContent {
                     drawContent()
                     if (shuffle || smartOn) drawCircle(com.music.spotui.ui.theme.AppAccent, radius = 2.dp.toPx(),
-                        center = androidx.compose.ui.geometry.Offset(size.width / 2, size.height + 7.dp.toPx()))
+                        center = androidx.compose.ui.geometry.Offset(size.width / 2, size.height + 5.dp.toPx()))
                 }
                 .pressable {
                     // As in Spotify: off → shuffle → smart shuffle (playlists, Liked Songs) → off.
@@ -1229,7 +1236,7 @@ fun PlayerFull(
         
         Icon(
             modifier = Modifier
-                .size(40.dp)
+                .size(32.dp)
                 .pressable {
                     // The queue itself is already in shuffled order when shuffle
                     // is on (reordered once at toggle) — never re-shuffle per tap.
@@ -1243,7 +1250,7 @@ fun PlayerFull(
             modifier = Modifier
                 // requiredSize forces an exact 64×64 square even if the parent Column
                 // constrains height — .size() alone let it get squished into an ellipse.
-                .requiredSize(64.dp)  // never below 56dp
+                .requiredSize(64.dp)
                 .pressable(pressedScale = 0.92f) {
                     if (songPlayingState) {
                         SongPlayer.pause()
@@ -1275,7 +1282,7 @@ fun PlayerFull(
             contentAlignment = Alignment.Center
         ) {
             com.music.spotui.ui.components.PlayPauseIcon(
-                modifier = Modifier.size(36.dp),
+                modifier = Modifier.size(32.dp),
                 tint = Color.Black,
                 playing = songPlayingState,
                 contentDescription = stringResource(if (songPlayingState) R.string.notif_action_pause else R.string.notif_action_play))
@@ -1283,9 +1290,8 @@ fun PlayerFull(
 
         Icon(
             modifier = Modifier
-                .size(40.dp)
+                .size(32.dp)
                 .pressable {
-
                     playerViewModel.playNextSongs(queueSongs, context)
                 }
             ,
@@ -1294,11 +1300,14 @@ fun PlayerFull(
             contentDescription = stringResource(R.string.np_content_desc_next))
         Icon(
             modifier = Modifier
-                .size(28.dp)
+                .size(24.dp)
+                .drawWithContent {
+                    drawContent()
+                    if (repeat) drawCircle(com.music.spotui.ui.theme.AppAccent, radius = 2.dp.toPx(),
+                        center = androidx.compose.ui.geometry.Offset(size.width / 2, size.height + 5.dp.toPx()))
+                }
                 .pressable {
                     SongPlayer.cycleRepeat()
-
-
                 }
             ,
             tint = if (repeat){
@@ -1327,7 +1336,7 @@ fun PlayerConnectRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 4.dp),
+            .padding(horizontal = 24.dp, vertical = 4.dp),
     ) {
         // Spotify Connect: current device, opens the device picker.
         Row(
@@ -1378,7 +1387,7 @@ fun PlayerConnectRow(
                     painter = painterResource(id = R.drawable.ic_share),
                     tint = Color.White,
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(22.dp)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
@@ -1412,13 +1421,13 @@ fun PlayerConnectRow(
                     )
                 }
             }
-            Spacer(modifier = Modifier.width(28.dp))
+            Spacer(modifier = Modifier.width(22.dp))
             Icon(
                 // Official queue glyph: a short line over stacked wide ones.
                 imageVector = PlayerIcons.queue,
                 tint = Color.White,
                 modifier = Modifier
-                    .size(24.dp)
+                    .size(22.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,

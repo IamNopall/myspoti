@@ -270,7 +270,7 @@ fun MiniPlayer(navController: NavHostController) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(54.dp)
+                .height(56.dp)
                 .padding(start = 8.dp, end = 12.dp)
         ) {
             androidx.compose.foundation.pager.HorizontalPager(
@@ -304,13 +304,20 @@ fun MiniPlayer(navController: NavHostController) {
                         contentDescription = ""
                     )
                     val remote = SongPlayer.activeDevice.value
-                    Column(modifier = Modifier.padding(start = 12.dp, end = 8.dp)) {
+                    Column(modifier = Modifier.padding(start = 10.dp, end = 8.dp)) {
                         if (remote == null) {
-                            Text(text = if (adPlaying) stringResource(R.string.ad_playing) else (m.title), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                            if (!adPlaying) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = if (adPlaying) stringResource(R.string.ad_playing) else (m.title),
+                                color = Color.White,
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
+                            if (!adPlaying) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 1.dp)) {
                                 // The artist yields the width: the output's name stays whole.
                                 Text(
-                                    text = m.singer, color = Color.White.copy(alpha = 0.7f), fontSize = 13.sp,
+                                    text = m.singer, color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp,
                                     maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                     modifier = Modifier.weight(1f, fill = false),
                                 )
@@ -327,7 +334,7 @@ fun MiniPlayer(navController: NavHostController) {
                                         imageVector = if (route.kind == AudioRoute.Kind.BLUETOOTH) Icons.Filled.BluetoothAudio else Icons.Filled.Headphones,
                                         contentDescription = stringResource(R.string.playing_on),
                                         tint = Color.White.copy(alpha = 0.55f),
-                                        modifier = Modifier.padding(start = 6.dp).size(12.dp),
+                                        modifier = Modifier.padding(start = 5.dp).size(12.dp),
                                     )
                                     Text(
                                         text = routeLabel, color = Color.White.copy(alpha = 0.55f), fontSize = 11.sp,
@@ -340,20 +347,20 @@ fun MiniPlayer(navController: NavHostController) {
                             // Playing on another device: "Title • Artist", then the device in green.
                             Text(
                                 text = androidx.compose.ui.text.buildAnnotatedString {
-                                    pushStyle(androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Bold, color = Color.White))
+                                    pushStyle(androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.White))
                                     append(m.title)
                                     pop()
                                     pushStyle(androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.7f)))
                                     append(" • " + (m.singer))
                                     pop()
                                 },
-                                fontSize = 13.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, softWrap = false,
+                                fontSize = 13.5.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, softWrap = false,
                                 // Scrolls once per track then rests: an endless marquee in the always-visible
                                 // mini player made the whole app redraw at 120 Hz without pause.
                                 modifier = Modifier.basicMarquee(iterations = 1, initialDelayMillis = 2_000),
                             )
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, tint = com.music.spotui.ui.theme.AppAccent, modifier = Modifier.size(14.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 1.dp)) {
+                                Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, tint = com.music.spotui.ui.theme.AppAccent, modifier = Modifier.size(13.dp))
                                 Text(remote.name, color = com.music.spotui.ui.theme.AppAccent, fontSize = 12.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(start = 4.dp))
                             }
                         }
@@ -365,13 +372,12 @@ fun MiniPlayer(navController: NavHostController) {
                 painter = painterResource(id = if (SongPlayer.activeDevice.value != null) R.drawable.ic_devices else R.drawable.ic_devices),
                 tint = if (SongPlayer.activeDevice.value != null) com.music.spotui.ui.theme.AppAccent else Color.White.copy(alpha = 0.8f),
                 modifier = Modifier.pressable(0.96f) { showDevices = true }
-                    .size(22.dp)
-                    ,
+                    .size(22.dp),
                 contentDescription = stringResource(R.string.mr_user_route_category_name),
             )
-            Spacer(modifier = Modifier.width(20.dp))
+            Spacer(modifier = Modifier.width(14.dp))
             if (SongPlayer.canLike) com.music.spotui.ui.screens.AddButton(song = { com.music.spotui.ui.screens.nowPlayingSong(vm) }, liked = liked, size = 24.dp) { vm.updateLikeState(true) }
-            Spacer(modifier = Modifier.width(20.dp))
+            Spacer(modifier = Modifier.width(14.dp))
             com.music.spotui.ui.components.PlayPauseIcon(
                 playing = songPlayingState,
                 contentDescription = if (songPlayingState) stringResource(R.string.content_description_pause_button) else stringResource(R.string.content_description_play_button),
@@ -386,24 +392,21 @@ fun MiniPlayer(navController: NavHostController) {
                         }
                     }
                     .size(26.dp)
-                    
             )
         }
-        // Thin progress line at the bottom of the card.
+        // Thin progress line at the bottom of the card, edge-to-edge.
         // Drawn every frame from the engine clock: smooth at the display refresh rate.
         androidx.compose.foundation.Canvas(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-                .height(2.dp)
-                .clip(RoundedCornerShape(1.dp))
+                .height(2.5.dp)
                 // Its own layer: a tick re-records these two rectangles, not the whole card.
                 .graphicsLayer()
         ) {
             frame.value
             val dur = SongPlayer.getDuration().toFloat()
             val p = if (dur > 0f) (SongPlayer.getCurrentPosition() / dur).coerceIn(0f, 1f) else 0f
-            drawRect(Color.White.copy(alpha = 0.25f))
+            drawRect(Color.White.copy(alpha = 0.2f))
             drawRect(Color.White, size = size.copy(width = size.width * p))
         }
     }

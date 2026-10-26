@@ -754,13 +754,13 @@ fun InlineLyrics(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp, 8.dp, 16.dp, 40.dp)
+            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 40.dp)
             // The card's live bounds are read when the lyrics open / close (see LyricsOverlay).
             .onGloballyPositioned { LyricsCardAnchor.coords = it }
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(CARD_CORNER))
             .background(palette.background)
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onExpand() }
-            .padding(16.dp),
+            .padding(18.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(
@@ -831,7 +831,7 @@ private class LyricsWindow(private val rect: Rect, private val radius: Float) : 
         Outline.Rounded(RoundRect(rect, CornerRadius(radius)))
 }
 
-private val CARD_CORNER = 12.dp
+private val CARD_CORNER = 16.dp
 
 /**
  * Hosts [LyricsScreen] as a container transform: the screen is laid out once at full size and
