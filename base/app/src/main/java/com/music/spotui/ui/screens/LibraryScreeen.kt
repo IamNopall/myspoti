@@ -159,13 +159,13 @@ fun LibraryScreen(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp, 12.dp, 16.dp, 8.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Text(
                 text = stringResource(R.string.navigationbar_musicappitems_yourlibrary_title),
                 fontWeight = FontWeight.Bold,
                 color = AppText,
-                fontSize = 22.sp,
+                fontSize = 24.sp,
                 // The title itself scrolls the list to its top in the official app
                 // ("Appuyez pour faire défiler jusqu'en haut de la liste").
                 modifier = Modifier
@@ -527,18 +527,18 @@ fun SumUpLibraryScreen(
                         ) } finally { if (dragKey == key) finish() }
                     })
                     .fillMaxWidth()
-                    .padding(20.dp, 6.dp)
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
             ) {
                 LibraryEntryCover(entry, Modifier
-                    .size(55.dp)
-                    .clip(RoundedCornerShape(if (entry.isPlaylist) 6.dp else 4.dp)),
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(4.dp)),
                 )
                 Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
-                    Text(text = entry.name, color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = entry.name, color = AppText, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 2.dp)) {
                         if (entry.pinned) Icon(Icons.Default.PushPin, null, tint = com.music.spotui.ui.theme.AppAccent,
                             modifier = Modifier.padding(end = 4.dp).size(12.dp))
-                        Text(text = entry.subtitle, color = AppMuted, fontSize = 12.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(text = entry.subtitle, color = AppMuted, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
                 if (entry.uri.isNotBlank() && !LibraryEdits.isPending(entry.spotifyId)) Icon(Icons.Default.MoreVert, stringResource(R.string.content_description_context_menu),
@@ -561,21 +561,20 @@ fun SumUpLibraryScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.pressable(0.96f) { navController.navigate(artistRoute(artist.name, artist.id)) }
                         .fillMaxWidth()
-                        .padding(20.dp, 6.dp)
-                        
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
                 ) {
                     GlideImage(
                         transition = CrossFade,
                         modifier = Modifier
-                            .size(55.dp)
+                            .size(56.dp)
                             .clip(CircleShape),
                         model = artist.coverUri,
                         contentScale = ContentScale.Crop,
                         contentDescription = ""
                     )
                     Column(modifier = Modifier.padding(start = 12.dp)) {
-                        Text(text = artist.name, color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(text = stringResource(R.string.artist_subtitle), color = AppMuted, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Text(text = artist.name, color = AppText, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(text = stringResource(R.string.artist_subtitle), color = AppMuted, fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 2.dp))
                     }
                 }
             }

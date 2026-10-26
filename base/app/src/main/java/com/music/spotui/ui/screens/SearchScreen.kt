@@ -845,16 +845,20 @@ private fun BrowseCategoryTile(
 
 @Composable
 fun SearchTopBar() {
-    Row(horizontalArrangement = Arrangement.Start,
+    Row(
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp)
     ) {
-        Text(text = stringResource(R.string.navigationbar_musicappitems_search_title), color = AppText, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        //Icon(imageVector = Icons.Default.Person, contentDescription = "", tint = Color.White)
+        Text(
+            text = stringResource(R.string.navigationbar_musicappitems_search_title),
+            color = AppText,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+        )
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -865,23 +869,25 @@ fun SearchStickyBar(
     focusRequester: androidx.compose.ui.focus.FocusRequester? = null,
     onTextChange: (String) -> Unit,
 ) {
-
     // The field is always attached to a requester, so the clear button can put the cursor back in it.
     val ownFocus = remember { androidx.compose.ui.focus.FocusRequester() }
     val fieldFocus = focusRequester ?: ownFocus
-    Row(verticalAlignment = Alignment.CenterVertically,
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .height(55.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .height(48.dp)
             .background(Color.White)
-            .padding(10.dp, 0.dp)
-    ){
+            .padding(start = 14.dp, end = 10.dp)
+    ) {
         Icon(
             painterResource(id = R.drawable.ic_search_big),
-            tint = Color.Black,
-            contentDescription = "")
+            tint = Color(0xFF121212),
+            modifier = Modifier.size(22.dp),
+            contentDescription = "",
+        )
 
         TextField(
             enabled = true,
@@ -889,7 +895,7 @@ fun SearchStickyBar(
                 .focusRequester(fieldFocus)
                 .onFocusChanged { onFocusChange(it.isFocused) },
             value = text,
-            textStyle = TextStyle.Default.copy(fontSize = 16.sp, color = Color.Black, fontWeight = FontWeight(500)),
+            textStyle = TextStyle.Default.copy(fontSize = 15.sp, color = Color(0xFF121212), fontWeight = FontWeight(500)),
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = Color.Transparent,
                 disabledContainerColor = Color.Transparent,
@@ -897,21 +903,20 @@ fun SearchStickyBar(
                 disabledIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = Color.Black
-
+                cursorColor = Color(0xFF121212)
             ),
             singleLine = true,
             onValueChange = onTextChange,
             placeholder = {
                 Text(
-                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
-                    text = stringResource(R.string.search_header_field_hint)
-
+                    fontSize = 15.sp,
+                    color = Color(0xFF535353),
+                    text = stringResource(R.string.search_header_field_hint),
                 )
             },
             trailingIcon = if (text.isEmpty()) null else {
-                { SearchClearButton(fieldFocus, Color.Black) { onTextChange("") } }
+                { SearchClearButton(fieldFocus, Color(0xFF121212)) { onTextChange("") } }
             },
         )
     }
