@@ -438,17 +438,6 @@ fun LyricsScreen(
                 Text(title, color = palette.highlight, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(artist, color = palette.highlight.copy(alpha = 0.75f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            meaning?.takeIf { !it.about.isNullOrBlank() }?.let { m ->
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(48.dp).clickable(
-                        interactionSource = remember { MutableInteractionSource() }, indication = null,
-                    ) { meaningOpen = true },
-                ) {
-                    Icon(Icons.Outlined.Lightbulb, contentDescription = stringResource(R.string.lyrics_meaning_title), tint = palette.highlight)
-                }
-                if (meaningOpen) com.music.spotui.ui.components.AboutSheet(m, palette.background) { meaningOpen = false }
-            }
             Box {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -465,7 +454,15 @@ fun LyricsScreen(
                     translating = (state as? LyricsViewModel.State.Loaded)?.showTranslation == true,
                     onTranslate = { vm.toggleTranslation(targetLanguage) },
                     onReload = { SongPlayer.currentLyricsTrack()?.let { vm.load(it, force = true) } },
+                    hasAbout = meaning?.about?.isNotBlank() == true,
+                    onAbout = { meaningOpen = true },
                 )
+            }
+        }
+
+        if (meaningOpen) {
+            meaning?.takeIf { !it.about.isNullOrBlank() }?.let { m ->
+                com.music.spotui.ui.components.AboutSheet(m, palette.background) { meaningOpen = false }
             }
         }
 
@@ -579,11 +576,29 @@ private fun LyricsMenu(
     translating: Boolean,
     onTranslate: () -> Unit,
     onReload: () -> Unit,
+    hasAbout: Boolean = false,
+    onAbout: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var extra by remember { mutableStateOf(isLyricsExtraSources(context)) }
     var words by remember { mutableStateOf(com.music.spotui.data.preferences.isLyricsWordSync(context)) }
     DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
+        if (hasAbout) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.lyrics_meaning_about)) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Lightbulb,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                },
+                onClick = {
+                    onDismiss()
+                    onAbout()
+                },
+            )
+        }
         // Word by word (karaoke) or line by line: the app then picks the source by itself.
         DropdownMenuItem(
             text = {
