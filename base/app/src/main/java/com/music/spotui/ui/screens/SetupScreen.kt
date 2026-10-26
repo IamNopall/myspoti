@@ -77,9 +77,8 @@ import com.music.spotui.ui.theme.AppBackground
  */
 object Setup {
     private const val KEY = "SetupDone"
-    /** The permissions step, the sound quality one or the look one (each new step is shown once after the update too). */
-    fun needed(context: Context) = !permissionsDone(context) || !com.music.spotui.data.preferences.isQualityChosen(context) ||
-        !com.music.spotui.data.preferences.LookPref.isChosen(context)
+    /** The permissions step or the sound quality one. */
+    fun needed(context: Context) = !permissionsDone(context) || !com.music.spotui.data.preferences.isQualityChosen(context)
     fun permissionsDone(context: Context) = context.getSharedPreferences("myspoti_prefs", Context.MODE_PRIVATE).getBoolean(KEY, false)
     fun done(context: Context) = context.getSharedPreferences("myspoti_prefs", Context.MODE_PRIVATE).edit().putBoolean(KEY, true).apply()
 }
@@ -90,11 +89,10 @@ private fun granted(context: Context, permission: String) =
 @Composable
 fun SetupScreen(onDone: () -> Unit) {
     val context = LocalContext.current
-    // First the sound quality, then the look, then the permissions (each skipped when done before an update).
+    // First the sound quality, then the permissions.
     val needQuality = remember { !com.music.spotui.data.preferences.isQualityChosen(context) }
-    val needLook = remember { !com.music.spotui.data.preferences.LookPref.isChosen(context) }
     val needPerms = remember { !Setup.permissionsDone(context) }
-    val order = remember { listOfNotNull(0.takeIf { needQuality }, 1.takeIf { needLook }, 2.takeIf { needPerms }).ifEmpty { listOf(2) } }
+    val order = remember { listOfNotNull(0.takeIf { needQuality }, 2.takeIf { needPerms }).ifEmpty { listOf(2) } }
     var index by remember { mutableIntStateOf(0) }
     val steps = order.size
     fun next() { if (index + 1 < order.size) index++ else onDone() }
@@ -116,10 +114,6 @@ fun SetupScreen(onDone: () -> Unit) {
                 when (order[i]) {
                     0 -> QualityStep(onNext = {
                         com.music.spotui.data.preferences.setQualityChosen(context)
-                        next()
-                    })
-                    1 -> com.music.spotui.ui.look.LookStep(onNext = {
-                        com.music.spotui.data.preferences.LookPref.setChosen(context)
                         next()
                     })
                     else -> PermissionsStep(onDone)

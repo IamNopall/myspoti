@@ -109,58 +109,20 @@ fun App() {
     val shareTarget by com.music.spotui.ui.components.SpotifyCode.request.collectAsState()
     shareTarget?.let { t -> com.music.spotui.ui.components.SpotifyCodeSheet(t) { com.music.spotui.ui.components.SpotifyCode.request.value = null } }
 
-    // The look (Settings > Display) switches the shell live. The nav host keeps one place in the
-    // tree in both looks, so a switch keeps the back stack, the pages' state and the playback.
-    val immersive = com.music.spotui.ui.navigation.isImmersive()
-    val haze = com.music.spotui.ui.immersive.shell.rememberImmersiveHazeState()
-    // Liquid Glass (Settings > Display): the pages record themselves for the glass to refract.
-    // Not provided while it is off or unsupported, so nothing is recorded for no reader.
-    val glassPage = com.music.spotui.ui.immersive.shell.rememberImmersiveBackdrop()
-    val liquidGlass = immersive && com.music.spotui.ui.immersive.shell.rememberLiquidGlassActive()
-    // The floating chrome's fold (iOS 26): pages scroll it through immersiveChromeScroll().
-    val chrome = com.music.spotui.ui.immersive.shell.rememberImmersiveChromeState()
-    androidx.compose.runtime.CompositionLocalProvider(
-        com.music.spotui.ui.immersive.shell.LocalImmersiveHaze provides if (immersive) haze else null,
-        com.music.spotui.ui.immersive.shell.LocalImmersiveBackdrop provides if (liquidGlass) glassPage else null,
-        com.music.spotui.ui.immersive.shell.LocalImmersiveChrome provides if (immersive) chrome else null,
-    ) {
     androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier,
             bottomBar = {
-                if (!immersive) MainBottomNavigation(navController = navController, bottomBarState = bottomBarState, bottomBarPlayerState)
+                MainBottomNavigation(navController = navController, bottomBarState = bottomBarState, bottomBarPlayerState)
             }
         ) {
             MyNavHost(
                 navHostController = navController, bottomBarState = bottomBarState, bottomBarPlayerState,
-                // Immersive: each page marks its own list as what the glass bars blur (a source on
-                // the whole host would hold the pages' own top bars too).
-                modifier = if (immersive) Modifier.background(com.music.spotui.ui.immersive.Immersive.Page) else Modifier,
+                modifier = Modifier,
             )
         }
-        if (immersive) ImmersiveShell(navController)
         // Over the pages and the bottom bar: pulling it down shows them, already in place.
-        else com.music.spotui.ui.navigation.PlayerOverlay(navController)
-    }
-    }
-}
-
-
-
-/**
- * The Immersive look's floating chrome: the mini player capsule over the tab bar (both hidden
- * on the full-screen routes; folded into one row while a page scrolls down), and its player over
- * everything.
- */
-@Composable
-private fun ImmersiveShell(navController: androidx.navigation.NavHostController) {
-    androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
-        com.music.spotui.ui.immersive.shell.ImmersiveBottomChrome(
-            navController,
-            miniPlayer = { m -> com.music.spotui.ui.immersive.player.ImmersiveMiniPlayer(navController, m) },
-            modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter),
-        )
-        com.music.spotui.ui.immersive.player.ImmersivePlayerOverlay(navController)
+        com.music.spotui.ui.navigation.PlayerOverlay(navController)
     }
 }
 

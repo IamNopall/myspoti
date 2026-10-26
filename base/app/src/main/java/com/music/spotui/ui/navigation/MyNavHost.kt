@@ -475,7 +475,6 @@ val LocalPageSettled = androidx.compose.runtime.staticCompositionLocalOf<android
     androidx.compose.runtime.mutableStateOf(true)
 }
 
-/** The Immersive look is on (Settings > Display, or the onboarding's look step). */
+/** Always false: only Classic Spotify theme is active. */
 @Composable
-internal fun isImmersive(): Boolean =
-    com.music.spotui.ui.look.LocalLook.current == com.music.spotui.data.preferences.Look.IMMERSIVE
+internal fun isImmersive(): Boolean = false

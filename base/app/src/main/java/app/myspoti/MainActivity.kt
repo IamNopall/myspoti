@@ -85,40 +85,12 @@ class MainActivity : AppCompatActivity() {
                     }
                     androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize()) {
                         when {
-                            showLook -> com.music.spotui.ui.look.LookStep(onNext = {
-                                com.music.spotui.data.preferences.LookPref.setChosen(this@MainActivity); showLook = false
-                                setupNeeded = com.music.spotui.ui.screens.Setup.needed(this@MainActivity)
-                            })
                             signedIn && setupNeeded -> com.music.spotui.ui.screens.SetupScreen(
                                 onDone = { setupNeeded = false },
                             )
                             signedIn -> App()
                             connecting -> ConnectingScreen()
                             else -> WelcomeScreen(onLogin = { showLogin() })
-                        }
-                        // Existing users, once, right after the update: the new look, live.
-                        if (signedIn && !setupNeeded && !showLook && !showingLogin && !inPip && !lookOffered) {
-                            if (com.music.spotui.data.preferences.LookPref.look == com.music.spotui.data.preferences.Look.IMMERSIVE) {
-                                androidx.compose.runtime.LaunchedEffect(Unit) {
-                                    com.music.spotui.data.preferences.LookPref.setOffered(this@MainActivity); lookOffered = true
-                                }
-                            } else {
-                                val close = { look: com.music.spotui.data.preferences.Look ->
-                                    com.music.spotui.data.preferences.LookPref.set(this@MainActivity, look)
-                                    com.music.spotui.data.preferences.LookPref.setOffered(this@MainActivity)
-                                    lookOffered = true
-                                }
-                                val keep = { close(com.music.spotui.data.preferences.Look.CLASSIC) }
-                                androidx.compose.ui.window.Dialog(
-                                    onDismissRequest = keep,
-                                    properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
-                                ) {
-                                    com.music.spotui.ui.look.LookStep(
-                                        onNext = { close(com.music.spotui.data.preferences.Look.IMMERSIVE) },
-                                        offer = com.music.spotui.ui.look.LookOffer(onKeep = keep),
-                                    )
-                                }
-                            }
                         }
                         // "Ask each time": the download quality question, above every screen.
                         com.music.spotui.ui.components.DownloadAskHost()
